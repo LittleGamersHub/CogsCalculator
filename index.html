@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COGS Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: grid;
+            grid-row-gap: 15px;
+        }
+
+        input {
+            padding: 5px;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>COGS Calculator</h1>
+        <form id="cogs-form">
+            <label for="gross-margin">Gross Profit (%):</label>
+            <input type="number" id="gross-margin" required>
+
+            <label for="num-trucks">Number of Trucks:</label>
+            <input type="number" id="num-trucks" required>
+
+            <label for="num-employees">Number of Employees:</label>
+            <input type="number" id="num-employees" required>
+
+            <label for="cost-per-hour">Cost per Employee per Hour ($):</label>
+            <input type="number" id="cost-per-hour" required>
+
+            <label for="hours-per-day">Hours per Day:</label>
+            <input type="number" id="hours-per-day" required>
+
+            <label for="days">Number of Days:</label>
+            <input type="number" id="days" required>
+
+            <label for="dump-fees">Dump Fees ($):</label>
+            <input type="number" id="dump-fees" required>
+
+            <label for="credit-card-fees">Credit Card Fees (%):</label>
+            <input type="number" id="credit-card-fees" step="0.01" required>
+
+
+            <button type="submit">Calculate</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById('cogs-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const grossMargin = parseFloat(document.getElementById('gross-margin').value) / 100;
+            const numTrucks = parseFloat(document.getElementById('num-trucks').value);
+            const numEmployees = parseFloat(document.getElementById('num-employees').value);
+            const costPerHour = parseFloat(document.getElementById('cost-per-hour').value);
+            const hoursPerDay = parseFloat(document.getElementById('hours-per-day').value);
+
+            const days = parseFloat(document.getElementById('days').value);
+            const dumpFees = parseFloat(document.getElementById('dump-fees').value);
+            const creditCardFees = parseFloat(document.getElementById('credit-card-fees').value) / 100;
+            // Calculate total labor cost
+            const laborCost = numEmployees * costPerHour * hoursPerDay * days;
+
+            // Calculate total costs
+            const totalCosts = laborCost + dumpFees;
+
+            // Calculate COGS percentage (adjusted for credit card fees)
+            const cogsPercentage = 1 - grossMargin - creditCardFees;
+
+            // Calculate estimate based on total costs and COGS percentage
+            const estimate = totalCosts / cogsPercentage;
+
+            // Display the result
+            document.getElementById('result').innerHTML = `Offer Price: $${estimate.toFixed(2)}`;
+        });
+    </script>
+</body>
+
+</html>
