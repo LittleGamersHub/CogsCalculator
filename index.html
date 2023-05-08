@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,20 +56,19 @@
         }
 
         #result {
+            font-size: 20px;
+            text-align: center;
             margin-top: 20px;
         }
+
     </style>
 </head>
-
 <body>
     <div class="container">
         <h1>COGS Calculator</h1>
         <form id="cogs-form">
-            <label for="gross-margin">Gross Profit (%):</label>
+            <label for="gross-margin">Gross Margin (%):</label>
             <input type="number" id="gross-margin" required>
-
-            <label for="num-trucks">Number of Trucks:</label>
-            <input type="number" id="num-trucks" required>
 
             <label for="num-employees">Number of Employees:</label>
             <input type="number" id="num-employees" required>
@@ -78,52 +76,80 @@
             <label for="cost-per-hour">Cost per Employee per Hour ($):</label>
             <input type="number" id="cost-per-hour" required>
 
-            <label for="hours-per-day">Hours per Day:</label>
-            <input type="number" id="hours-per-day" required>
+            <label for="estimated-work-hours">Estimated Work Hours:</label>
+            <input type="number" id="estimated-work-hours" required>
 
-            <label for="days">Number of Days:</label>
-            <input type="number" id="days" required>
+            <label for="price-per-ton">Price per Ton ($):</label>
+            <input type="number" id="price-per-ton" required>
 
-            <label for="dump-fees">Dump Fees ($):</label>
-            <input type="number" id="dump-fees" required>
+            <label for="estimated-tons">Estimated Tons:</label>
+<input type="number" id="estimated-tons" required>
+
 
             <label for="credit-card-fees">Credit Card Fees (%):</label>
-            <input type="number" id="credit-card-fees" step="0.01" required>
-
+            <input type="decimal" id="credit-card-fees" required>
 
             <button type="submit">Calculate</button>
         </form>
         <div id="result"></div>
     </div>
     <script>
-        document.getElementById('cogs-form').addEventListener('submit', function (event) {
+
+
+    // Load input data from localStorage and format correctly
+    document.getElementById('gross-margin').value = (localStorage.getItem('grossMargin') * 100) || '';
+    document.getElementById('num-employees').value = localStorage.getItem('numEmployees') || '';
+    document.getElementById('cost-per-hour').value = localStorage.getItem('costPerHour') || '';
+    document.getElementById('estimated-work-hours').value = localStorage.getItem('estimatedWorkHours') || '';
+    document.getElementById('price-per-ton').value = localStorage.getItem('pricePerTon') || '';
+    document.getElementById('estimated-tons').value = localStorage.getItem('estimatedTons') || '';
+    document.getElementById('credit-card-fees').value = (localStorage.getItem('creditCardFees') * 100).toFixed(2) || '';
+
+
+        document.getElementById('cogs-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
+
+
+
             const grossMargin = parseFloat(document.getElementById('gross-margin').value) / 100;
-            const numTrucks = parseFloat(document.getElementById('num-trucks').value);
             const numEmployees = parseFloat(document.getElementById('num-employees').value);
             const costPerHour = parseFloat(document.getElementById('cost-per-hour').value);
-            const hoursPerDay = parseFloat(document.getElementById('hours-per-day').value);
+            const estimatedWorkHours = parseFloat(document.getElementById('estimated-work-hours').value);
+            const pricePerTon = parseFloat(document.getElementById('price-per-ton').value);
+            const creditCardFees = parseFloat(document.getElementById('credit-card-fees').value)
+            / 100;
 
-            const days = parseFloat(document.getElementById('days').value);
-            const dumpFees = parseFloat(document.getElementById('dump-fees').value);
-            const creditCardFees = parseFloat(document.getElementById('credit-card-fees').value) / 100;
-            // Calculate total labor cost
-            const laborCost = numEmployees * costPerHour * hoursPerDay * days;
+        // Calculate total labor cost
+        const laborCost = numEmployees * costPerHour * estimatedWorkHours;
 
-            // Calculate total costs
-            const totalCosts = laborCost + dumpFees;
+        const estimatedTons = parseFloat(document.getElementById('estimated-tons').value);
 
-            // Calculate COGS percentage (adjusted for credit card fees)
-            const cogsPercentage = 1 - grossMargin - creditCardFees;
+        // Calculate total costs
+        const totalCosts = laborCost + (pricePerTon * estimatedTons);
 
-            // Calculate estimate based on total costs and COGS percentage
-            const estimate = totalCosts / cogsPercentage;
+        // Calculate COGS percentage (adjusted for credit card fees)
+        const cogsPercentage = 1 - grossMargin - creditCardFees;
 
-            // Display the result
-            document.getElementById('result').innerHTML = `Offer Price: $${estimate.toFixed(2)}`;
-        });
-    </script>
+
+
+        // Calculate estimate based on total costs and COGS percentage
+        const estimate = totalCosts / cogsPercentage;
+
+
+
+    // Display the result
+    document.getElementById('result').innerHTML = `Offer Price: $${estimate.toFixed(2)}`;
+
+    // Save input data to localStorage
+    localStorage.setItem('grossMargin', grossMargin);
+    localStorage.setItem('numEmployees', numEmployees);
+    localStorage.setItem('costPerHour', costPerHour);
+    localStorage.setItem('estimatedWorkHours', estimatedWorkHours);
+    localStorage.setItem('pricePerTon', pricePerTon);
+    localStorage.setItem('estimatedTons', estimatedTons);
+    localStorage.setItem('creditCardFees', creditCardFees);
+});
+</script>
 </body>
-
 </html>
