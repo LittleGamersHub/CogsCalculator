@@ -60,6 +60,15 @@
             text-align: center;
             margin-top: 20px;
         }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
 
     </style>
 </head>
@@ -92,6 +101,13 @@
             <button type="submit">Calculate</button>
         </form>
         <div id="result"></div>
+        <div id="workiz-link" style="display: none;">
+            <p>
+              <a href="https://www.workiz.com/industries/junk-removal/?src=jr-cogs-calc" target="_blank">Turn it into an estimate for free with Workiz Lite</a>
+            </p>
+          </div>
+          
+          
     </div>
     <script>
 
@@ -140,6 +156,8 @@
 
     // Display the result
     document.getElementById('result').innerHTML = `Offer Price: $${estimate.toFixed(2)}`;
+    document.getElementById('workiz-link').style.display = 'block';
+
 
     // Save input data to localStorage
     localStorage.setItem('grossMargin', grossMargin);
