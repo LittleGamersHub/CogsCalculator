@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,14 +33,18 @@
 
         form {
             display: grid;
-            grid-row-gap: 15px;
+            grid-row-gap: 8px;
         }
 
         input {
             padding: 5px;
+            margin: 0;  /* Add this line to remove the default margins */
             width: 100%;
-            font-size: 16px;
+            font-size: 14px;
+            box-sizing: border-box; /* Make sure this line is present */
         }
+
+
 
         button {
             background-color: #fcb900;
@@ -93,11 +98,26 @@
             <input type="number" id="price-per-ton" required>
 
             <label for="estimated-tons">Estimated Tons:</label>
-<input type="number" id="estimated-tons" required>
+            <input type="number" id="estimated-tons" required>
 
 
             <label for="credit-card-fees">Credit Card Fees (%):</label>
             <input type="decimal" id="credit-card-fees" required>
+            <button id="toggle-advanced-button" type="button">Toggle Advanced</button>
+
+            <div id="advanced-section" style="display: none;">
+                <label for="fuel-cost">Fuel Cost ($):</label>
+                <input type="number" id="fuel-cost">
+
+                <label for="vehicle-wear-tear">Vehicle Wear/Tear (%):</label>
+                <input type="number" id="vehicle-wear-tear">
+
+                <label for="advertising-cost">Advertising Cost (%):</label>
+                <input type="number" id="advertising-cost">
+
+                <label for="workers-comp-fica">Workers Comp and FICA Expense ($):</label>
+                <input type="number" id="workers-comp-fica">
+            </div>
 
             <button type="submit">Calculate</button>
         </form>
@@ -114,6 +134,14 @@
 
 
     // Load input data from localStorage and format correctly
+    document.getElementById('fuel-cost').value = localStorage.getItem('fuelCost') || '';
+
+    document.getElementById('vehicle-wear-tear').value = (localStorage.getItem('vehicleWearTear') * 100) || '';
+
+    document.getElementById('advertising-cost').value = (localStorage.getItem('advertisingCost') * 100) || '';
+
+    document.getElementById('workers-comp-fica').value = localStorage.getItem('workersCompFICA') || '';
+
     document.getElementById('gross-margin').value = (localStorage.getItem('grossMargin') * 100) || '';
     document.getElementById('num-employees').value = localStorage.getItem('numEmployees') || '';
     document.getElementById('cost-per-hour').value = localStorage.getItem('costPerHour') || '';
@@ -122,11 +150,25 @@
     document.getElementById('estimated-tons').value = localStorage.getItem('estimatedTons') || '';
     document.getElementById('credit-card-fees').value = (localStorage.getItem('creditCardFees') * 100).toFixed(2) || '';
 
+    document.getElementById('toggle-advanced-button').addEventListener('click', function() {
+    const advancedSection = document.getElementById('advanced-section');
+    if (advancedSection.style.display === 'none') {
+        advancedSection.style.display = 'block';
+    } else {
+        advancedSection.style.display = 'none';
+    }
+});
+
 
         document.getElementById('cogs-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
 
+            //advance values
+            const fuelCost = parseFloat(document.getElementById('fuel-cost').value) || 0;
+            const vehicleWearTear = parseFloat(document.getElementById('vehicle-wear-tear').value) / 100 || 0;
+            const advertisingCost = parseFloat(document.getElementById('advertising-cost').value) / 100 || 0;
+            const workersCompFICA = parseFloat(document.getElementById('workers-comp-fica').value) || 0;
 
 
             const grossMargin = parseFloat(document.getElementById('gross-margin').value) / 100;
@@ -137,37 +179,61 @@
             const creditCardFees = parseFloat(document.getElementById('credit-card-fees').value)
             / 100;
 
-        // Calculate total labor cost
-        const laborCost = numEmployees * costPerHour * estimatedWorkHours;
+            // Check if any advanced fields have data
+            const advancedFields = ['fuel-cost', 'vehicle-wear-tear', 'advertising-cost', 'workers-comp-fica'];
+            let advancedDataPresent = false;
+            for (let i = 0; i < advancedFields.length; i++) {
+                if (document.getElementById(advancedFields[i]).value) {
+                    advancedDataPresent = true;
+                    break;
+                }
+            }
 
-        const estimatedTons = parseFloat(document.getElementById('estimated-tons').value);
+            // If any advanced field has data, add "*" next to "Toggle Advanced"
+            const toggleAdvancedButton = document.getElementById('toggle-advanced-button');
+            if (advancedDataPresent) {
+                if (!toggleAdvancedButton.innerHTML.includes('*')) {
+                    toggleAdvancedButton.innerHTML += '*';
+                }
+            } else {
+                toggleAdvancedButton.innerHTML = 'Toggle Advanced';
+            }
 
-        // Calculate total costs
-        const totalCosts = laborCost + (pricePerTon * estimatedTons);
+            // Calculate total labor cost
+            const laborCost = numEmployees * costPerHour * estimatedWorkHours;
 
-        // Calculate COGS percentage (adjusted for credit card fees)
-        const cogsPercentage = 1 - grossMargin - creditCardFees;
+            const estimatedTons = parseFloat(document.getElementById('estimated-tons').value);
 
+            // Calculate total costs
+            const totalCosts = laborCost + (pricePerTon * estimatedTons) + fuelCost + workersCompFICA;
 
-
-        // Calculate estimate based on total costs and COGS percentage
-        const estimate = totalCosts / cogsPercentage;
-
-
-
-    // Display the result
-    document.getElementById('result').innerHTML = `Offer Price: $${estimate.toFixed(2)}`;
-    document.getElementById('workiz-link').style.display = 'block';
+            // Adjust COGS for vehicle wear/tear and advertising cost
+            const cogsPercentage = 1 - grossMargin - creditCardFees - vehicleWearTear - advertisingCost;
 
 
-    // Save input data to localStorage
-    localStorage.setItem('grossMargin', grossMargin);
-    localStorage.setItem('numEmployees', numEmployees);
-    localStorage.setItem('costPerHour', costPerHour);
-    localStorage.setItem('estimatedWorkHours', estimatedWorkHours);
-    localStorage.setItem('pricePerTon', pricePerTon);
-    localStorage.setItem('estimatedTons', estimatedTons);
-    localStorage.setItem('creditCardFees', creditCardFees);
+            // Calculate estimate based on total costs and COGS percentage
+            const estimate = totalCosts / cogsPercentage;
+
+
+            // Display the result
+            document.getElementById('result').innerHTML = `Offer Price: $${estimate.toFixed(2)}`;
+            document.getElementById('workiz-link').style.display = 'block';
+
+
+            // Save input data to localStorage
+            localStorage.setItem('grossMargin', grossMargin);
+            localStorage.setItem('numEmployees', numEmployees);
+            localStorage.setItem('costPerHour', costPerHour);
+            localStorage.setItem('estimatedWorkHours', estimatedWorkHours);
+            localStorage.setItem('pricePerTon', pricePerTon);
+            localStorage.setItem('estimatedTons', estimatedTons);
+            localStorage.setItem('creditCardFees', creditCardFees);
+
+            localStorage.setItem('fuelCost', fuelCost);
+            localStorage.setItem('vehicleWearTear', vehicleWearTear);
+            localStorage.setItem('advertisingCost', advertisingCost);
+            localStorage.setItem('workersCompFICA', workersCompFICA);
+
 });
 </script>
 </body>
